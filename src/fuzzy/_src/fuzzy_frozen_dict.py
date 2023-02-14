@@ -33,7 +33,14 @@ class FuzzyFrozenDict(Mapping[str, VT]):
             matcher.set_seq2(x)
             for key, matches in self._matches.items():
                 matcher.set_seq1(key)
-                if not matcher.quick_ratio() > tolerance < matcher.ratio():
+                if any(
+                    ratio() < tolerance
+                    for ratio in (
+                        matcher.real_quick_ratio,
+                        matcher.quick_ratio,
+                        matcher.ratio,
+                    )
+                ):
                     continue
                 matches.add(x)
                 self._matches[x] = matches

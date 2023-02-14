@@ -28,7 +28,14 @@ class FuzzySetView(Generic[T]):
         matcher.set_seq2(x)
         for key in self._matches:
             matcher.set_seq1(key)
-            if matcher.quick_ratio() > self._tolerance < matcher.ratio():
+            if all(
+                ratio() >= self._tolerance
+                for ratio in (
+                    matcher.real_quick_ratio,
+                    matcher.quick_ratio,
+                    matcher.ratio,
+                )
+            ):
                 return True
         return False
 
@@ -53,7 +60,14 @@ class FuzzySetView(Generic[T]):
         ratio = self._tolerance
         for key in self._matches:
             matcher.set_seq1(key)
-            if matcher.quick_ratio() > ratio < matcher.ratio():
+            if all(
+                ratio() >= self._tolerance
+                for ratio in (
+                    matcher.real_quick_ratio,
+                    matcher.quick_ratio,
+                    matcher.ratio,
+                )
+            ):
                 best = key
                 ratio = matcher.ratio()
         if best is not x:
@@ -74,7 +88,14 @@ class FuzzyFrozenSet(AbstractSet[str]):
             matcher.set_seq2(x)
             for key, matches in self._matches.items():
                 matcher.set_seq1(key)
-                if not matcher.quick_ratio() > tolerance < matcher.ratio():
+                if any(
+                    ratio() < tolerance
+                    for ratio in (
+                        matcher.real_quick_ratio,
+                        matcher.quick_ratio,
+                        matcher.ratio,
+                    )
+                ):
                     continue
                 matches.append(x)
                 self._matches[x] = matches
